@@ -235,6 +235,7 @@ module Beanstalk
 
   class Pool
     attr_accessor :last_conn
+    attr_accessor :watch_list
 
     def initialize(addrs, default_tube=nil)
       @addrs = addrs
