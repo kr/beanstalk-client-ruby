@@ -314,15 +314,6 @@ module Beanstalk
       @watch_list = send_to_rand_conn(:list_tubes_watched, true)
       return r
     end
-     
-    def watch_only(tube)
-      r = send_to_all_conns(:watch, tube)
-      @watch_list.reject{ |x| x == tube }.each do |x|
-        send_to_all_conns(:ignore, x)
-      end
-      @watch_list = send_to_rand_conn(:list_tubes_watched, true)
-      return r
-    end
 
     def raw_stats()
       send_to_all_conns(:stats)
@@ -383,6 +374,17 @@ module Beanstalk
     def peek_job(id)
       make_hash(send_to_all_conns(:peek_job, id))
     end
+    
+    # UNOFFICIAL
+    
+     def watch_only(tube)
+       r = send_to_all_conns(:watch, tube)
+       @watch_list.reject{ |x| x == tube }.each do |x|
+         send_to_all_conns(:ignore, x)
+       end
+       @watch_list = send_to_rand_conn(:list_tubes_watched, true)
+       return r
+     end
 
     private
 
@@ -422,7 +424,7 @@ module Beanstalk
     end
 
     def pick_connection()
-      open_connections[rand(open_connections.size)] or raise NotConnected
+      ( self.last_conn ||= open_connections[rand(open_connections.size)] ) or raise NotConnected
     end
 
     def make_hash(pairs)
