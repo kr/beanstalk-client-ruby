@@ -377,14 +377,50 @@ module Beanstalk
     
     # UNOFFICIAL
     
-     def watch_only(tube)
-       r = send_to_all_conns(:watch, tube)
-       @watch_list.reject{ |x| x == tube }.each do |x|
-         send_to_all_conns(:ignore, x)
-       end
-       @watch_list = send_to_rand_conn(:list_tubes_watched, true)
-       return r
-     end
+    def delete(id, tube=nil)
+      cnx.use(tube) if tube
+      pick_connection.delete(id)
+    end
+    
+    # Kick a job.
+    def kick(id, tube=nil)
+      use(tube) if tube
+      pick_connection.kick(id)
+    end
+    
+    # Restart buried jobs in a tube
+    def resurrect(max_tries=nil, tube=nil)
+      use(tube) if tube
+      while (job = peek_buried)
+        return false if max_tries && job.stats['buries'] >= max_tries
+        last_conn.kick(1)
+      end
+      true
+    end
+    
+    # Return a hash of statistics for all tubes
+    def stats_tubes(r=nil)
+      ret = {}
+      tubes(r).each{ |tube| ret[tube] = last_conn.stats_tube(tube) }
+      ret
+    end
+    
+    # Return a sorted list of all tubes (matching r if specified)
+    def tubes(r=nil)
+      t = list_tubes.values.flatten
+      t = t.select{ |x| x.match(r) } if r
+      t.reject{ |x| x == 'default' }.to_a.sort
+    end
+    
+    # Watch a single tube
+    def watch_only(tube)
+      r = send_to_all_conns(:watch, tube)
+      @watch_list.reject{ |x| x == tube }.each do |x|
+        send_to_all_conns(:ignore, x)
+      end
+      @watch_list = send_to_rand_conn(:list_tubes_watched, true)
+      return r
+    end
 
     private
 
