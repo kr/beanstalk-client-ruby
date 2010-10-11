@@ -53,8 +53,8 @@ module Beanstalk
       pri = pri.to_i
       delay = delay.to_i
       ttr = ttr.to_i
-      body = body.to_s # Make sure that body.size gives a useful number
-      interact("put #{pri} #{delay} #{ttr} #{body.size}\r\n#{body}\r\n",
+      body = "#{body}" # Make sure that body.bytesize gives a useful number
+      interact("put #{pri} #{delay} #{ttr} #{body.bytesize}\r\n#{body}\r\n",
                %w(INSERTED BURIED))[0].to_i
     end
 
