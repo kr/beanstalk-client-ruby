@@ -400,9 +400,7 @@ module Beanstalk
     
     # Return a hash of statistics for all tubes
     def stats_tubes(r=nil)
-      ret = {}
-      tubes(r).each{ |tube| ret[tube] = stats_tube(tube) }
-      ret
+      tubes(r).inject({}){ |r,x| r.merge(x => stats_tube(x)) rescue r }
     end
     
     # Return a sorted list of all tubes (matching r if specified)
