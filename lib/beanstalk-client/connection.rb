@@ -401,7 +401,7 @@ module Beanstalk
     # Return a hash of statistics for all tubes
     def stats_tubes(r=nil)
       ret = {}
-      tubes(r).each{ |tube| ret[tube] = last_conn.stats_tube(tube) }
+      tubes(r).each{ |tube| ret[tube] = stats_tube(tube) }
       ret
     end
     
