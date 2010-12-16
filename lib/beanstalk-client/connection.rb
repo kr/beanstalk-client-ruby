@@ -378,7 +378,7 @@ module Beanstalk
     # UNOFFICIAL
     
     def delete(id, tube=nil)
-      cnx.use(tube) if tube
+      use(tube) if tube
       pick_connection.delete(id)
     end
     
