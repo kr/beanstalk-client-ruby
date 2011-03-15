@@ -23,25 +23,28 @@ require 'thread'
 
 module Beanstalk
   class Connection
+    DEFAULT_CONNECTION_TIMEOUT = 3
     attr_reader :addr
 
-    def initialize(addr, default_tube=nil)
+    def initialize(addr, default_tube=nil, timeout=DEFAULT_CONNECTION_TIMEOUT)
       @mutex = Mutex.new
       @waiting = false
       @addr = addr
-      connect
+      connect(timeout)
       @last_used = 'default'
       @watch_list = [@last_used]
       self.use(default_tube) if default_tube
       self.watch(default_tube) if default_tube
     end
 
-    def connect
-      host, port = addr.split(':')
-      @socket = TCPSocket.new(host, port.to_i)
+    def connect(timeout)
+      with_timeout(timeout) do
+        host, port = addr.split(':')
+        @socket = TCPSocket.new(host, port.to_i)
 
-      # Don't leak fds when we exec.
-      @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
+        # Don't leak fds when we exec.
+        @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
+      end
     end
 
     def close
@@ -179,6 +182,23 @@ module Beanstalk
 
     private
 
+    begin
+      require "system_timer"
+
+      def with_timeout(seconds, &block)
+        SystemTimer.timeout_after(seconds, &block)
+      end
+
+    rescue LoadError
+      warn "WARNING: using the built-in Timeout class which is known to have issues when used for opening connections. Install the SystemTimer gem if you want to make sure ruby-beansktalk-client will not hang." unless RUBY_VERSION >= "1.9" || RUBY_PLATFORM =~ /java/
+
+      require "timeout"
+
+      def with_timeout(seconds, &block)
+        Timeout.timeout(seconds, &block)
+      end
+    end
+
     def interact(cmd, rfmt)
       raise WaitingForJobError if @waiting
       @mutex.lock
@@ -236,8 +256,9 @@ module Beanstalk
   class Pool
     attr_accessor :last_conn
 
-    def initialize(addrs, default_tube=nil)
+    def initialize(addrs, default_tube=nil, connection_timeout=nil)
       @addrs = addrs
+      @connection_timeout = connection_timeout
       @watch_list = ['default']
       @default_tube=default_tube
       @watch_list = [default_tube] if default_tube
@@ -249,13 +270,13 @@ module Beanstalk
       @addrs.each do |addr|
         begin
           if !@connections.include?(addr)
-            @connections[addr] = Connection.new(addr, @default_tube)
+            @connections[addr] = Connection.new(addr, @default_tube, @connection_timeout)
             prev_watched = @connections[addr].list_tubes_watched()
             to_ignore = prev_watched - @watch_list
             @watch_list.each{|tube| @connections[addr].watch(tube)}
             to_ignore.each{|tube| @connections[addr].ignore(tube)}
           end
-        rescue Errno::ECONNREFUSED
+        rescue Errno::ECONNREFUSED, Timeout::Error
           raise NotConnected
         rescue Exception => ex
           puts "#{ex.class}: #{ex}"
@@ -375,6 +396,7 @@ module Beanstalk
     end
 
     private
+
 
     def call_wrap(c, *args)
       self.last_conn = c
