@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.files = [
     ".gitignore",
      "LICENSE",
-     "README.rdoc",
+     "README.md",
      "Rakefile",
      "VERSION",
      "lib/beanstalk-client.rb",
