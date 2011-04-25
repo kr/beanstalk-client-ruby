@@ -27,6 +27,7 @@ module Beanstalk
 
     def initialize(addr, default_tube=nil)
       @mutex = Mutex.new
+      @tube_mutex = Mutex.new
       @waiting = false
       @addr = addr
       connect
@@ -76,6 +77,14 @@ module Beanstalk
 
     def peek_buried()
       interact("peek-buried\r\n", :job)
+    end
+
+    def on_tube(tube, &block)
+      @tube_mutex.lock
+      use tube
+      yield self
+    ensure
+      @tube_mutex.unlock
     end
 
     def reserve(timeout=nil)
@@ -289,6 +298,10 @@ module Beanstalk
       send_to_rand_conn(:yput, obj, pri, delay, ttr)
     end
 
+    def on_tube(tube, &block)
+      send_to_rand_conn(:on_tube, tube, &block)
+    end
+
     # Reserve a job from the queue.
     #
     # == Parameters
@@ -376,9 +389,9 @@ module Beanstalk
 
     private
 
-    def call_wrap(c, *args)
+    def call_wrap(c, *args, &block)
       self.last_conn = c
-      c.send(*args)
+      c.send(*args, &block)
     rescue UnexpectedResponse => ex
       raise ex
     rescue EOFError, Errno::ECONNRESET, Errno::EPIPE => ex
@@ -401,9 +414,9 @@ module Beanstalk
       retry_wrap{open_connections.inject(nil) {|r,c| r or call_wrap(c, *args)}}
     end
 
-    def send_to_rand_conn(*args)
+    def send_to_rand_conn(*args, &block)
       connect()
-      retry_wrap{call_wrap(pick_connection, *args)}
+      retry_wrap{call_wrap(pick_connection, *args, &block)}
     end
 
     def send_to_all_conns(*args)
