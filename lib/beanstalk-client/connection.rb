@@ -185,6 +185,12 @@ module Beanstalk
       return @watch_list if cached
       @watch_list = interact("list-tubes-watched\r\n", :yaml)
     end
+    
+    def pause_tube(tube, delay)
+      delay = delay.to_i
+      interact("pause-tube #{tube} #{delay}\r\n", %w(PAUSED))
+      :ok
+    end
 
     private
 
@@ -385,6 +391,10 @@ module Beanstalk
 
     def peek_job(id)
       make_hash(send_to_all_conns(:peek_job, id))
+    end
+    
+    def pause_tube(tube, delay)
+      send_to_all_conns(:pause_tube, tube, delay)
     end
 
     private
