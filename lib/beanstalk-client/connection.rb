@@ -192,10 +192,6 @@ module Beanstalk
       :ok
     end
 
-    def job_stats(id)
-      make_hash(send_to_all_conns(:job_stats, id))
-    end
-
     private
 
     def interact(cmd, rfmt)
@@ -399,6 +395,10 @@ module Beanstalk
     
     def pause_tube(tube, delay)
       send_to_all_conns(:pause_tube, tube, delay)
+    end
+
+    def job_stats(id)
+      make_hash(send_to_all_conns(:job_stats, id))
     end
 
     private
