@@ -192,6 +192,10 @@ module Beanstalk
       :ok
     end
 
+    def job_stats(id)
+      make_hash(send_to_all_conns(:job_stats, id))
+    end
+
     private
 
     def interact(cmd, rfmt)
