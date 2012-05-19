@@ -25,11 +25,12 @@ module Beanstalk
   class Connection
     attr_reader :addr
 
-    def initialize(addr, default_tube=nil)
+    def initialize(addr, default_tube=nil, options = {})
       @mutex = Mutex.new
       @tube_mutex = Mutex.new
       @waiting = false
       @addr = addr
+      @logger = options[:logger]
       connect
       @last_used = 'default'
       @watch_list = [@last_used]
@@ -251,8 +252,9 @@ module Beanstalk
   class Pool
     attr_accessor :last_conn
 
-    def initialize(addrs, default_tube=nil)
+    def initialize(addrs, default_tube=nil, options = {})
       @addrs = addrs
+      @logger = options[:logger]
       @watch_list = ['default']
       @default_tube=default_tube
       @watch_list = [default_tube] if default_tube
@@ -264,16 +266,16 @@ module Beanstalk
       @addrs.each do |addr|
         begin
           if !@connections.include?(addr)
-            @connections[addr] = Connection.new(addr, @default_tube)
+            @connections[addr] = Connection.new(addr, @default_tube, :logger => @logger)
             prev_watched = @connections[addr].list_tubes_watched()
             to_ignore = prev_watched - @watch_list
             @watch_list.each{|tube| @connections[addr].watch(tube)}
             to_ignore.each{|tube| @connections[addr].ignore(tube)}
           end
-        rescue Errno::ECONNREFUSED
-          raise NotConnected
-        rescue Exception => ex
-          puts "#{ex.class}: #{ex}"
+        rescue Errno::ECONNREFUSED => ex
+          @logger.warn("#{self.class}(#{addr}): #{ex.inspect}") if @logger
+        rescue StandardError => ex
+          @logger.error("#{self.class}(#{addr}): #{ex.inspect}") if @logger
         end
       end
       @connections.size
