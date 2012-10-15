@@ -77,14 +77,14 @@ If the tube does not exist, it will be created.</p>
 <h3>Jobs</h3>
 
 <p>A job in beanstalk gets created by a client and includes a 'body' which con contain all relevant job metadata.
-With BeanEater, a job is enqueued onto beanstalk and then later reserved and processed. 
+With beanstalk, a job is enqueued into a tube and then later reserved and processed. 
 Here is a picture of the typical job lifecycle:</p>
 
 <pre><code>   put            reserve               delete
   -----&gt; [READY] ---------&gt; [RESERVED] --------&gt; *poof*
 </code></pre>
 
-<p>You can <code>put</code> a job onto the beanstalk queue using the <code>put</code> command:</p>
+<p>You can put a job onto the beanstalk queue using the <code>put</code> command:</p>
 
 <div class="highlight"><pre><span class="vi">@beanstalk</span><span class="o">.</span><span class="n">put</span> <span class="s2">"job-data-here"</span>
 </pre></div>
