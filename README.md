@@ -56,7 +56,7 @@ Here is a picture of the typical job lifecycle:
   -----> [READY] ---------> [RESERVED] --------> *poof*
 ```
 
-You can `put` a job onto the beanstalk queue using the `put` command:
+You can put a job onto the beanstalk queue using the `put` command:
 
 ```ruby
 @beanstalk.put "job-data-here"
@@ -125,7 +125,7 @@ queue into a special 'holding' area for later inspection or reuse.
 Beanstalk has plenty of commands for introspecting the state of the queues and jobs. These methods include:
 
 ```ruby
-# Get overall stats about the state of beanstalk and processing that has occured
+# Get overall stats about the job processing that has occured
 @beanstalk.stats
 
 # Get statistical information about the specified job if it exists
