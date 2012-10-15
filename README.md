@@ -47,8 +47,8 @@ If the tube does not exist, it will be created.
 
 ### Jobs
 
-A job in beanstalk gets created by a client and includes a 'body' which con contain all relevant job metadata.
-With BeanEater, a job is enqueued onto beanstalk and then later reserved and processed. 
+A job in beanstalk gets created by a client and includes a 'body' which contains all relevant job metadata.
+With beanstalk, a job is enqueued into a tube and then later reserved and processed. 
 Here is a picture of the typical job lifecycle:
 
 ```
