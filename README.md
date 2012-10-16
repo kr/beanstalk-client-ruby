@@ -3,7 +3,7 @@
 [Beanstalk](http://kr.github.com/beanstalkd/) is a simple, fast work queue. Its interface is generic, but was
 originally designed for reducing the latency of page views in high-volume web
 applications by running time-consuming tasks asynchronously. 
-Read the [beanstalk protocol](http://github.com/kr/beanstalkd/raw/master/doc/protocol.md) for
+Read the [beanstalk protocol](https://github.com/kr/beanstalkd/blob/master/doc/protocol.md) for
 more detail.
 
 ## Installation
@@ -146,8 +146,8 @@ Beanstalk has plenty of commands for introspecting the state of the queues and j
 @beanstalk.list_tubes_watched
 ```
 
-Be sure to check the [beanstalk protocol](http://github.com/kr/beanstalkd/raw/master/doc/protocol.md) for
-a more detailed looks at stats commands.
+Be sure to check the [beanstalk protocol](https://github.com/kr/beanstalkd/blob/master/doc/protocol.md) for
+more details about the stats commands.
 
 ## Resources
 
@@ -155,7 +155,7 @@ There are other resources helpful when learning about beanstalk:
 
  * [Beanstalkd homepage](http://kr.github.com/beanstalkd/)
  * [beanstalk-ruby-client](https://github.com/kr/beanstalk-client-ruby)
- * [beanstalk protocol](http://github.com/kr/beanstalkd/raw/master/doc/protocol.md)
+ * [beanstalk protocol](https://github.com/kr/beanstalkd/blob/master/doc/protocol.md)
 
 ## Contributors
 
