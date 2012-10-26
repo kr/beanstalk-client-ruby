@@ -1,0 +1,14 @@
+PATH
+  remote: .
+  specs:
+    beanstalk-client (1.1.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  beanstalk-client!
