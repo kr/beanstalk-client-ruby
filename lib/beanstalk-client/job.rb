@@ -44,8 +44,7 @@ class Beanstalk::Job
   end
 
   # Deletes the job from the queue
-  def delete()
-    return if !@reserved
+  def delete
     @conn.delete(id)
     @reserved = false
   end
