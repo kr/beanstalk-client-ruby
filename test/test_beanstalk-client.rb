@@ -7,7 +7,7 @@ class TestBeanstalkClient < Test::Unit::TestCase
 
   def setup
     @beanstalk = Beanstalk::Pool.new(['127.0.0.1:11300'])
-    @tubes = ['one', 'two']
+    @tubes = ['one', 'two', 'three']
 
     # Put something on each tube so they exist
     @beanstalk.use('one')
@@ -70,17 +70,51 @@ class TestBeanstalkClient < Test::Unit::TestCase
     assert_equal two['current-jobs-ready'], 2
   end
 
+  def test_delete_job_in_buried_state
+    @beanstalk.on_tube('three') do |conn|
+      conn.put('one')
+    end
+
+    @beanstalk.watch 'three'
+    job = @beanstalk.reserve
+
+    assert_equal 'one', job.body
+    job.bury
+    assert_equal 'one', @beanstalk.peek_buried.body
+
+    job.delete
+    assert_nil @beanstalk.peek_job(job.id).values.first
+  end
+
+  def test_delete_job_in_reserved_state
+    @beanstalk.on_tube('three') do |conn|
+      conn.put('two')
+    end
+
+    @beanstalk.watch 'three'
+    job = @beanstalk.reserve
+
+    assert_equal 'two', job.body
+    assert_equal 'two', @beanstalk.peek_job(job.id).values.first.body
+    job.delete
+    assert_nil @beanstalk.peek_job(job.id).values.first
+  end
+
   def teardown
     # Clear the tubes
     @tubes.each do |tube|
-      stats = @beanstalk.stats_tube tube
-      num_jobs = stats['current-jobs-ready']
-      @beanstalk.watch tube
-      num_jobs.times do
-        job = @beanstalk.reserve
-        job.delete
+      begin
+        stats = @beanstalk.stats_tube tube
+        num_jobs = stats['current-jobs-ready']
+        @beanstalk.watch tube
+        num_jobs.times do
+          job = @beanstalk.reserve
+          job.delete
+        end
+        @beanstalk.ignore tube
+      rescue Beanstalk::NotFoundError
+        next # skip tube
       end
-      @beanstalk.ignore tube
     end
   end
 
