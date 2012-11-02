@@ -1,3 +1,7 @@
+# New Home: http://beanstalkd.github.com/beaneater/
+
+This fork is no longer maintained.
+
 # Beanstalk Ruby Client
 
 [Beanstalk](http://kr.github.com/beanstalkd/) is a simple, fast work queue. Its interface is generic, but was
