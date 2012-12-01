@@ -40,9 +40,13 @@ module Beanstalk
     def connect
       host, port = addr.split(':')
       @socket = TCPSocket.new(host, port.to_i)
-
-      # Don't leak fds when we exec.
-      @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
+      if RUBY_PLATFORM =~ /mswin|mingw|cygwin/
+        # Windows doesn't support SETFD etc
+        @socket.fcntl(Fcntl::F_SETFL, Fcntl::O_NONBLOCK)
+      else
+        # Don't leak fds when we exec.
+        @socket.fcntl(Fcntl::F_SETFD, Fcntl::FD_CLOEXEC)
+      end
     end
 
     def close
