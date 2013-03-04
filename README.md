@@ -110,7 +110,7 @@ You can process each new job as they become available using a loop:
 
 ```ruby
 loop do
-  job = beanstalk.reserve # waits for a job
+  job = @beanstalk.reserve # waits for a job
   puts job.body # prints "hello"
   job.delete # remove job after processing
 end
