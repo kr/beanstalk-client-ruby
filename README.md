@@ -72,7 +72,7 @@ You can also specify additional metadata to control job processing parameters. S
 you can set the `priority`, `delay`, and `ttr` of a particular job:
 
 ```ruby
-# defaults are priority 0, delay of 0 and ttr of 120 seconds
+# defaults are priority 65536, delay of 0 and ttr of 120 seconds
 @beanstalk.put "job-data-here", 1000, 50, 200
 ```
 
